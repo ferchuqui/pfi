@@ -8,6 +8,7 @@ import rutasLog from "./src/routes/auth.routes.js";
 
 import rutasProductos from "./src/routes/product.routes.js";
 
+
 const app = express();
 
 const PORT = process.env.PORT || 3000;
