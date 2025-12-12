@@ -1,71 +1,53 @@
-import {agregarProducto, eliminarProducto, obtenerProducto, obtenerProductos} from "../models/products.models.js";
+import { db } from "../data/data.js";
+import { collection, addDoc, deleteDoc, doc, getDocs, getDoc } from "firebase/firestore";
 
-export const addProductService = async (product) => {
-  return(
-    new Promise(async (res, rej) => {
-      try{
-        const newProduct = await agregarProducto(product)
-        res(newProduct)
-      }catch(error){
-        rej(error)
-      }
-    })
-  )
+const COLLECTION_NAME = "products";
 
-}
-
-export const deleteProductService = async (id) => {
-  console.log(id)
-  return(
-    new Promise(async (res, rej) => {
-      try{
-        await eliminarProducto(id)
-        console.log("despues de eliminar el producto")
-        res()
-      }catch(error){
-        rej(error)
-      }
-    })
-  )
-}
-
-/*
-export const editProductService = async (id, product) => {
-  return(
-    new Promise(async (res, rej) => {
-      try{
-        const newProduct = await actualizarProducto(id, product)
-        res(newProduct)
-      }catch(error){
-        rej(error)
-      }
-    })
-  )
-}*/
-
-export const getAllProductsService = async () => {
-  return(
-    new Promise(async (res,rej)=> {
-      console.log("test2 dentro de servicio")
-      try{
-        const productos = await obtenerProductos()
-        res(productos);
-      }catch(error){
-        rej()
-      }
-    })
-  )
+export const agregarProducto = async (product) => {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), product);
+    return { id: docRef.id, ...product };
+  } catch (error) {
+    console.error("Error al agregar producto:", error);
+    throw error;
+  }
 };
 
-export const getProductByIdService = async (id) => {
-  return(
-    new Promise(async(res, rej) => {
-      try{
-        const product = await obtenerProducto(id)
-        res(product)
-      }catch(error){
-        rej(error)
-      }
-    })
-  )
+export const eliminarProducto = async (id) => {
+  try {
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  } catch (error) {
+    console.error("Error al eliminar producto:", error);
+    throw error;
+  }
+};
+
+export const obtenerProductos = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const products = [];
+    querySnapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+    return products;
+  } catch (error) {
+    console.error("Error al obtener productos:", error);
+    throw error;
+  }
+};
+
+export const obtenerProducto = async (id) => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error al obtener producto:", error);
+    throw error;
+  }
 };
